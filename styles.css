@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ABFÜ Lieferschein-Tool</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-card">
+        <img src="/logo.png" alt="ABFÜ Logo" class="brand-logo" />
+        <p class="brand-copy">Lieferscheine als PDF hochladen, automatisch erkennen und nach Excel exportieren.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Upload</h2>
+        <label class="upload-box" for="pdfInput">
+          <input id="pdfInput" type="file" accept="application/pdf" multiple />
+          <span class="upload-title">PDFs auswählen</span>
+          <span class="upload-subtitle">Papier, Sperrmüll, Hausmüll, Biomüll</span>
+        </label>
+        <div class="button-row">
+          <button id="analyzeBtn" class="btn btn-primary">Erkennen</button>
+          <button id="clearBtn" class="btn btn-secondary">Leeren</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Export</h2>
+        <div class="button-row stacked">
+          <button id="excelBtn" class="btn btn-primary">Excel exportieren</button>
+          <button id="jsonBtn" class="btn btn-secondary">JSON sichern</button>
+        </div>
+      </div>
+
+      <div class="panel info-panel">
+        <h2>Logik</h2>
+        <ul>
+          <li><strong>Papier</strong> → Veolia Hafenstraße</li>
+          <li><strong>Sperrmüll</strong> → MVA Nürnberg</li>
+          <li><strong>Hausmüll</strong> → MVA Nürnberg</li>
+          <li><strong>Biomüll</strong> → Kompostplatz Burgfarrnbach</li>
+        </ul>
+        <p>Netto hat Priorität. Unsichere Biomüll-Werte werden auf <strong>Prüfen</strong> gesetzt.</p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">ABFÜ Dashboard</p>
+          <h1>Lieferschein-Erkennung im Dark Mode</h1>
+          <p class="hero-copy">Für eure 4 bekannten PDF-Typen mit Fokus auf Netto-Gewicht und sauberem Excel-Export.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-label">Einträge</span>
+            <strong id="recordCount">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Zu prüfen</span>
+            <strong id="reviewCount">0</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar">
+        <input id="searchInput" type="search" placeholder="Filtern nach Datum, Abfallart, KFZ, Belegnummer …" />
+        <select id="statusFilter">
+          <option value="alle">Alle Status</option>
+          <option value="OK">OK</option>
+          <option value="Prüfen">Prüfen</option>
+        </select>
+      </section>
+
+      <section class="panel table-panel">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>lfd.Nr</th>
+                <th>Datum</th>
+                <th>Abfallart</th>
+                <th>Erzeuger/Transporteur</th>
+                <th>Tonnage</th>
+                <th>Abl.Ort</th>
+                <th>KFZ-Nr</th>
+                <th>Anzahl</th>
+                <th>Status</th>
+                <th>Belegnummer</th>
+                <th>Quelldatei</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="messageBox" class="message-box hidden"></section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

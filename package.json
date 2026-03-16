@@ -1,0 +1,46 @@
+const express = require('express');
+const multer = require('multer');
+const { parsePdfBuffer } = require('../services/parserService');
+const { buildWorkbook } = require('../services/excelService');
+
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
+router.get('/health', (_req, res) => {
+  res.json({ ok: true, service: 'abfue-lieferschein-tool' });
+});
+
+router.post('/upload', upload.array('files', 50), async (req, res) => {
+  try {
+    const files = req.files || [];
+    const allRecords = [];
+
+    for (const file of files) {
+      if (!file.originalname.toLowerCase().endsWith('.pdf')) continue;
+      const parsed = await parsePdfBuffer(file.buffer, file.originalname);
+      allRecords.push(...parsed);
+    }
+
+    const numbered = allRecords.map((record, index) => ({ ...record, lfdNr: index + 1 }));
+    res.json({ records: numbered });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'PDF-Verarbeitung fehlgeschlagen.' });
+  }
+});
+
+router.post('/export/xlsx', express.json({ limit: '10mb' }), async (req, res) => {
+  try {
+    const records = Array.isArray(req.body?.records) ? req.body.records : [];
+    const workbook = await buildWorkbook(records);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="abfue-lieferscheine.xlsx"');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Excel-Export fehlgeschlagen.' });
+  }
+});
+
+module.exports = router;
